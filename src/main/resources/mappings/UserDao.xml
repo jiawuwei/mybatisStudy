@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.jia.mybatis.dao.UserDao">
+    <!--开启本mapper的二级缓存,什么都不需要配置-->
+   <!-- <cache></cache>-->
+    <!--由于mybatis二级缓存不能满足分布式缓存，所以需要和ehcache或redis配合使用-->
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"></cache>
+    <!-- 需求：通过id查询用户 userCache为禁用二级缓存-->
+    <select id="findUserById" parameterType="int" resultType="cn.jia.mybatis.entity.User" useCache="false">
+        select * from user where id = #{id}
+    </select>
+
+
+    <!-- 需求：通过id查询用户 -->
+    <select id="findUserById1" parameterType="int" resultMap="userResultMap">
+        select a.id as id_,a.username as username_ from user a where a.id = #{id}
+    </select>
+    <resultMap id="userResultMap" type="User">
+        <id column="id_" property="id"></id>
+        <result column="username_" property="username"></result>
+    </resultMap>
+    <!--多对多查询-->
+    <select id="findUserAndItemsResultMap" resultMap="UserAndItemsResultMap">
+        SELECT
+        orders.*,
+        user.`username`,
+        user.`sex`,
+        user.`address`,
+        orderdetail.`id` orderdetail_id,
+        orderdetail.`items_id`,
+        orderdetail.`items_num`,
+        orderdetail.`orders_id`,
+        items.`name` items_name,
+        items.`detail` items_detail,
+        items.`price` items_price
+        FROM
+        orders,
+        USER,
+        orderdetail,
+        items
+        WHERE orders.`user_id`=user.`id` AND orders.`id` = orderdetail.`orders_id` AND orderdetail.`items_id`=items.`id`
+    </select>
+    <resultMap id="UserAndItemsResultMap" type="User">
+        <!--用户信息-->
+        <id column="user_id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="sex" property="sex"/>
+        <result column="address" property="address"/>
+        <!--订单信息-->
+        <collection property="orders" ofType="Orders">
+            <id column="id" property="id"/>
+            <result column="user_id" property="userId"/>
+            <result column="number" property="number"/>
+            <result column="createtime" property="createTime"/>
+            <result column="note" property="note"/>
+            <!--订单细则信息-->
+            <collection property="details" ofType="OrderDetail">
+                <id column="orderdetail_id" property="id"/>
+                <result column="items_id" property="itemsId"/>
+                <result column="items_num" property="itemsNum"/>
+                <result column="orders_id" property="ordersId"/>
+                <!-- 一个明细对应一个商品信息，使用association -->
+                <association property="items" javaType="Items">
+                    <id column="items_id" property="id"/>
+                    <result column="items_name" property="name"/>
+                    <result column="items_detail" property="detail"/>
+                    <result column="items_price" property="price"/>
+                </association>
+            </collection>
+        </collection>
+        
+    </resultMap>
+
+    <update id="updateUserById" parameterType="User">
+        UPDATE user set username=#{username} where id=#{id}
+    </update>
+</mapper>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <properties resource="jdbc.properties"></properties>
+    <settings>
+        <!-- 打开延迟加载的开关 -->
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <!-- 将积极加载改为消极加载，即延迟加载 -->
+        <setting name="aggressiveLazyLoading" value="false"/>
+        <!--开启二级缓存-->
+        <setting name="cacheEnabled" value="true"/>
+    </settings>
+    <!--别名的定义 注意顺序问题-->
+    <typeAliases>
+        <package name="cn.jia.mybatis.entity"/>
+    </typeAliases>
+    <!-- 和Spring整合后environment配置都会被干掉 -->
+    <environments default="development">
+        <environment id="development">
+            <!-- 使用jdbc事务管理，目前由mybatis来管理 -->
+            <transactionManager type="JDBC"/>
+            <!-- 数据库连接池，目前由mybatis来管理 -->
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driver}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <!--<mapper resource="mappings/User.xml" />-->
+        <mapper resource="mappings/UserDao.xml"/>
+        <mapper resource="mappings/OrdersDao.xml"/>
+        <!--或者可以用下面的方式，和上面的方式一样，规范：需要将mapper接口类名和mapper.xml映射文件名称保持一致，且在一个目录中
+        这个规范的前提是：使用的是mapper代理的方法-->
+        <!--<mapper class="cn.jia.mybatis.dao.UserDao"></mapper>-->
+        <!--也可以批量加载，但是和上面的一致，需要将xml文件和接口文件在同一个包下-->
+        <!-- <package name="cn.jia.mybatis.dao"></package>-->
+
+    </mappers>
+</configuration>
